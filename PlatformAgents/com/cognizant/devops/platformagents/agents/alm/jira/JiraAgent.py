@@ -217,7 +217,11 @@ class JiraAgent(BaseAgent):
                 isLast = False
                 injectData = {'boardName' : board['name']}
                 while not isLast:
-                    sprintsResponse = self.getResponse(sprintsUrl+str(startAt), 'GET', self.userid, self.passwd, None)
+                    try:
+                        sprintsResponse = self.getResponse(sprintsUrl+str(startAt), 'GET', self.userid, self.passwd, None)
+                    except Exception as ex3:
+                        #board['error'] = str(ex3)
+                        break
                     isLast = sprintsResponse['isLast']
                     startAt = startAt + sprintsResponse['maxResults']
                     sprintValues = sprintsResponse['values']
