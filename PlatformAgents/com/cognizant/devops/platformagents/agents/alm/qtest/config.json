@@ -1,0 +1,53 @@
+{
+	"mqConfig" : {
+		"user" : "iSight", 
+		"password" : "iSight", 
+		"host" : "127.0.0.1", 
+		"exchange" : "iSight",
+		"agentControlXchg":"iAgent"
+	},
+	"subscribe" : {
+		"config" : "ALM.QTEST.config"
+	},
+	"publish" : {
+		"data" : "ALM.QTEST.DATA",
+		"health" : "ALM.QTEST.HEALTH"
+	},
+	"communication":{
+		"type" : "REST",
+    		"sslVerify": true,
+    		"responseType": "JSON" 
+	},
+	"dynamicTemplate": {
+	  "timeFieldMapping" : {
+		"creationDate" : "%Y-%m-%d"
+  		},
+		"responseTemplate" : {
+			"releases" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
+			"test-cycles" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
+			"test-suites" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
+			"test-runs" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
+			"test-cases" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"}
+		}
+	},	
+	"toolCategory" : "ALM",
+	"toolsTimeZone" : "GMT",
+	"insightsTimeZone" : "Asia/Kolkata",
+	"enableValueArray": false,
+	"useResponseTemplate" : true,
+	"auth" : "base64",
+	"runSchedule" : 30,
+	"timeStampField":"",
+	"timeStampFormat":"%Y-%m-%dT%H:%M:%SZ",
+	"isEpochTimeFormat" : false,
+	"startFrom" : "2016-10-10 15:46:33",
+	"baseUrl": "",
+	"username": "",
+	"password": "",
+	"isDebugAllowed" : false,
+	"loggingSetting" : {
+		"logLevel" : "WARN",
+		"maxBytes" : 5000000,
+		"backupCount" : 1000
+	}
+}
