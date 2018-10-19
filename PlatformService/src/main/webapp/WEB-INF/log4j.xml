@@ -10,7 +10,7 @@
 	</appender>
 
 	<appender name="springAppender" class="org.apache.log4j.RollingFileAppender">
-		<param name="file" value="${catalina.home}/logs/PlatformService/log.out" />
+		<param name="file" value="${env:INSIGHTS_HOME}/logs/PlatformService/log.out" />
 		<param name="append" value="true" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{MM/dd/yyyy HH:mm:ss}  [%t]:%c{5}.%M()%L %m%n" />
