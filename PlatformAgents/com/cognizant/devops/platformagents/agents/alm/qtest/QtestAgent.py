@@ -14,45 +14,90 @@
 # the License.
 #-------------------------------------------------------------------------------
 from com.cognizant.devops.platformagents.core.BaseAgent import BaseAgent
+from datetime import datetime as dateTime2
+from dateutil import parser
+import datetime
+import json
 
 class QtestAgent(BaseAgent):
     def process(self):
         baseUrl = self.config.get("baseUrl", None)
         username = self.config.get("username", None)
         password = self.config.get("password", None)
-        headers_token = {'accept': "application/json",'content-type': "application/x-www-form-urlencoded",'authorization': "Basic "}
-        payload = "grant_type=password&username="+username+"&password="+password
+        startFrom = self.config.get("startFrom", '')
+        startFrom = parser.parse(startFrom, ignoretz=True)
+        headers_token = {'accept': "application/json",'content-type': "application/x-www-form-urlencoded",'authorization': "Basic T25lRGV2T3BzSW5TaWdodHM6"}
+        payload = "grant_type=password&username="+str(username)+"&password="+str(password)
         trackingDetails = self.tracking.get("token",None)
         if trackingDetails is None:
             tokenResponse = self.getResponse(baseUrl+"/oauth/token", 'POST', None, None, payload, None, headers_token)
             token=tokenResponse.get("access_token", None)
             trackingDetails = {}
             self.tracking["token"] = token
-            self.updateTrackingJson(self.tracking)
-        token = trackingDetails
-        headers = {"accept": "application/json","Authorization": "bearer "+token}
-        data = []
+        else:
+            token=trackingDetails
+        headers = {"accept": "application/json","Authorization": "bearer "+str(token)+""}
         projectsList = self.getResponse(baseUrl+"/api/v3/projects?assigned=false", 'GET', None, None, None, None, headers)
         if len(projectsList) > 0:
             for projects in projectsList:
-                projectLinks = projects.get("links", None)
+                projectLinks = self.config.get("dynamicTemplate", {}).get("extensions", None)
                 projectName = projects.get("name", None)
+                projectId = projects.get("id", None)
+                projectLastUpdateDate = self.tracking.get(str(projectId), {}).get("lastupdated", None)
+                if projectLastUpdateDate is not None:
+                    startFrom = parser.parse(projectLastUpdateDate, ignoretz=True)
                 if len(projectLinks) > 0:
+                    linkUpdateTracking = []
+                    projectMaxUpdateDate = None
                     for links in projectLinks:
-                        link_type = links.get("rel", None)
+                        data = []
+                        link_type = links.get("type", None)
                         if link_type != "self":
-                            link = links.get("href", None)
+                            link = baseUrl + "/api/v3/projects/" + str(projectId) + "/" + str(link_type)
+                            pagination = links.get("pagination", False)
+                            if pagination:
+                                page_num = 1
+                                page_size = 25
+                                link = baseUrl + "/api/v3/projects/" + str(projectId) + "/" + str(link_type) + "?page=" + str(page_num) + "&size=" + str(page_size) + "&expandProps=false&expandSteps=false"
+                            nextPageResponse = True
                             linkResponse = self.getResponse(link, 'GET', None, None, None, None, headers)
-                            if len(linkResponse) > 0:
-                                for res in linkResponse:
-                                    responseTemplate = self.config.get("dynamicTemplate", {}).get("responseTemplate", {}).get(link_type, None)
-                                    if responseTemplate:
-                                        injectData= {}
-                                        data += self.parseResponse(responseTemplate, res, injectData)
-        if len(data) > 0:
-            self.publishToolsData(data)
-                                
-                            
+                            while nextPageResponse:
+                                if len(linkResponse) > 0:
+                                    linkTypeUpdateTracking = {link_type: True}
+                                    linkUpdateTracking.append(linkTypeUpdateTracking)
+                                    try:
+                                        for res in linkResponse:
+                                            lastUpdated = res.get('last_modified_date', None)
+                                            if lastUpdated > projectMaxUpdateDate:
+                                                projectMaxUpdateDate = lastUpdated
+                                            if lastUpdated is not None:
+                                                lastUpdated = parser.parse(lastUpdated, ignoretz=True)
+                                            if lastUpdated is not None and lastUpdated > startFrom:
+                                                responseTemplate = links.get("responseTemplate", None)
+                                                if responseTemplate:
+                                                    injectData= {}
+                                                    injectData['projectName'] = projectName
+                                                    injectData['projectId'] = projectId
+                                                    injectData['type'] = link_type
+                                                    data += self.parseResponse(responseTemplate, res, injectData)
+                                    except Exception as ex:
+                                        nextPageResponse = False
+                                        break
+                                        logging.error(ex)
+                                else:
+                                    nextPageResponse = False
+                                if pagination:
+                                    page_num = page_num + 1
+                                    link = baseUrl + "/api/v3/projects/" + str(projectId) + "/" + str(link_type) + "?page=" + str(page_num) + "&size=" + str(page_size) + "&expandProps=false&expandSteps=false"
+                                    linkResponse = self.getResponse(link, 'GET', None, None, None, None, headers)
+                                else:
+                                    nextPageResponse = False
+                        metadata = links.get("metadata", None)
+                        if len(data) > 0:
+                            self.publishToolsData(data, metadata)
+                    trackingDetails = {"lastupdated": projectMaxUpdateDate, "linkUpdateTracking": linkUpdateTracking}
+                    self.tracking[str(projectId)] = trackingDetails
+                    self.updateTrackingJson(self.tracking)                            
     '''
                             self.numbers_to_months(link_type, link)
     def numbers_to_months(self, link_type, link):

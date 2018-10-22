@@ -22,13 +22,19 @@
 	  "timeFieldMapping" : {
 		"creationDate" : "%Y-%m-%d"
   		},
-		"responseTemplate" : {
-			"releases" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
-			"test-cycles" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
-			"test-suites" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
-			"test-runs" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"},
-			"test-cases" : {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description"}
-		}
+		"extensions" : [
+	{"type": "releases", "pagination":false, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_RELEASE"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}},
+
+	{"type": "test-cycles", "pagination":false, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_TESTCYCLE"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}},
+
+	{"type": "test-suites", "pagination":false, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_TESTSUITE"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}},
+
+	{"type": "test-runs", "pagination":true, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_TESTSRUN"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}},
+
+	{"type": "test-cases", "pagination":true, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_TESTCASE"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}},
+
+	{"type": "requirements", "pagination":true, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}}
+		]
 	},	
 	"toolCategory" : "ALM",
 	"toolsTimeZone" : "GMT",
