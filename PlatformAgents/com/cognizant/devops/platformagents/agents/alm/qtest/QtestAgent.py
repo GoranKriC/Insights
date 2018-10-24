@@ -97,7 +97,35 @@ class QtestAgent(BaseAgent):
                             self.publishToolsData(data, metadata)
                     trackingDetails = {"lastupdated": projectMaxUpdateDate, "linkUpdateTracking": linkUpdateTracking}
                     self.tracking[str(projectId)] = trackingDetails
-                    self.updateTrackingJson(self.tracking)                            
+                    self.updateTrackingJson(self.tracking)
+                enableTraceMatrixReport = self.config.get("enableTraceMatrixReport", False)
+                dataTraceMatrix = []
+                if enableTraceMatrixReport:
+                    metaDataTraceMatrix = {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : True,"uniqueKey" : ["projectId", "ID"]}
+                    page_size = 25
+                    page_num = 1
+                    link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
+                    traceMatrixReport = self.getResponse(link, 'GET', None, None, None, None, headers)
+                    nextPageResponse = True
+                    while nextPageResponse:
+                        if len(traceMatrixReport) > 0:
+                            traceMatrixReport = traceMatrixReport[0].get("requirements", None)
+                            for matrix in traceMatrixReport:
+                                injectData= {}
+                                if 'testcases' in matrix:
+                                    injectData['projectName'] = projectName
+                                    injectData['projectId'] = projectId
+                                    injectData['testcases'] = matrix.get('testcases', None)
+                                    injectData['linkedTestcaseCount'] = matrix.get('linked-testcases', None)
+                                    injectData['ID'] = matrix.get('id', None)
+                                    dataTraceMatrix.append(injectData)
+                        else:
+                            nextPageResponse = False
+                        page_num = page_num + 1
+                        link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
+                        traceMatrixReport = self.getResponse(link, 'GET', None, None, None, None, headers)
+                    if len(dataTraceMatrix) > 0:
+                        self.publishToolsData(dataTraceMatrix, metaDataTraceMatrix)
     '''
                             self.numbers_to_months(link_type, link)
     def numbers_to_months(self, link_type, link):

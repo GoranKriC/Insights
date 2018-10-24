@@ -36,6 +36,7 @@
 	{"type": "requirements", "pagination":true, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}}
 		]
 	},	
+	"enableTraceMatrixReport": true,
 	"toolCategory" : "ALM",
 	"toolsTimeZone" : "GMT",
 	"insightsTimeZone" : "Asia/Kolkata",
