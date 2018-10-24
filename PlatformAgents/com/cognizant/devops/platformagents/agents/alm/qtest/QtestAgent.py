@@ -101,7 +101,8 @@ class QtestAgent(BaseAgent):
                 enableTraceMatrixReport = self.config.get("enableTraceMatrixReport", False)
                 dataTraceMatrix = []
                 if enableTraceMatrixReport:
-                    metaDataTraceMatrix = {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : True,"uniqueKey" : ["projectId", "ID"]}
+                    #metaDataTraceMatrix = {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : True,"uniqueKey" : ["projectId", "ID"]}
+                    metaDataTraceMatrix = self.config.get("dynamicTemplate", {}).get("traceMatrixReportMetadata", None)
                     page_size = 25
                     page_num = 1
                     link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
