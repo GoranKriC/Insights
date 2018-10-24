@@ -35,7 +35,8 @@
 
 	{"type": "requirements", "pagination":true, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}}
 		],
-	"traceMatrixReportMetadata": {"labels" : ["QTEST_REQUIREMENT"],"relation":{"properties":["PID"],"name":"REQUIREMENT_HAS_TESTCASES","source":{"constraints":["projectId","PID"]},"destination":{"constraints":["testcases"]}}}
+	"traceMatrixReportMetadata": {"labels" : ["QTEST_REQUIREMENT"],"relation":{"properties":["PID"],"name":"REQUIREMENT_HAS_TESTCASES","source":{"constraints":["projectId","PID"]},"destination":{"constraints":["testcases"]}}},
+	"projectList": []
 	},	
 	"enableTraceMatrixReport": true,
 	"toolCategory" : "ALM",
@@ -52,6 +53,7 @@
 	"baseUrl": "",
 	"username": "",
 	"password": "",
+	"accessToken": "",
 	"isDebugAllowed" : false,
 	"loggingSetting" : {
 		"logLevel" : "WARN",

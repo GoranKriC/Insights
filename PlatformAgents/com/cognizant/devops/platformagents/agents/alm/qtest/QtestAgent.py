@@ -26,23 +26,34 @@ class QtestAgent(BaseAgent):
         password = self.config.get("password", None)
         startFrom = self.config.get("startFrom", '')
         startFrom = parser.parse(startFrom, ignoretz=True)
-        headers_token = {'accept': "application/json",'content-type': "application/x-www-form-urlencoded",'authorization': "Basic T25lRGV2T3BzSW5TaWdodHM6"}
-        payload = "grant_type=password&username="+str(username)+"&password="+str(password)
-        trackingDetails = self.tracking.get("token",None)
-        if trackingDetails is None:
-            tokenResponse = self.getResponse(baseUrl+"/oauth/token", 'POST', None, None, payload, None, headers_token)
-            token=tokenResponse.get("access_token", None)
-            trackingDetails = {}
-            self.tracking["token"] = token
+        accessToken = self.config.get("accessToken", None)
+        if accessToken:
+            token=accessToken
         else:
-            token=trackingDetails
+            headers_token = {'accept': "application/json",'content-type': "application/x-www-form-urlencoded",'authorization': "Basic T25lRGV2T3BzSW5TaWdodHM6"}
+            payload = "grant_type=password&username="+str(username)+"&password="+str(password)
+            trackingDetails = self.tracking.get("token",None)
+            if trackingDetails is None:
+                tokenResponse = self.getResponse(baseUrl+"/oauth/token", 'POST', None, None, payload, None, headers_token)
+                token=tokenResponse.get("access_token", None)
+                trackingDetails = {}
+                self.tracking["token"] = token
+            else:
+                token=trackingDetails
         headers = {"accept": "application/json","Authorization": "bearer "+str(token)+""}
         projectsList = self.getResponse(baseUrl+"/api/v3/projects?assigned=false", 'GET', None, None, None, None, headers)
+        projectListConfig = self.config.get("dynamicTemplate", {}).get("projectList", '')
         if len(projectsList) > 0:
             for projects in projectsList:
                 projectLinks = self.config.get("dynamicTemplate", {}).get("extensions", None)
                 projectName = projects.get("name", None)
                 projectId = projects.get("id", None)
+                if len(projectListConfig) > 0 and projectId in projectListConfig:
+                    pass
+                elif len(projectListConfig) == 0:
+                    pass
+                else:
+                    continue
                 projectLastUpdateDate = self.tracking.get(str(projectId), {}).get("lastupdated", None)
                 if projectLastUpdateDate is not None:
                     startFrom = parser.parse(projectLastUpdateDate, ignoretz=True)
