@@ -36,6 +36,8 @@
 	{"type": "requirements", "pagination":true, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}}
 		],
 	"traceMatrixReportMetadata": {"labels" : ["QTEST_REQUIREMENT"],"relation":{"properties":["PID"],"name":"REQUIREMENT_HAS_TESTCASES","source":{"constraints":["projectId","PID"]},"destination":{"constraints":["testcases"]}}},
+
+	"defectMetaData": {"type": "defects", "pagination":false, "responseTemplate": {"name": "Name", "pid": "PID", "id": "ID", "created_date": "creationDate","description":"description", "last_modified_date": "lastModifiedDate"}, "metadata" : {"labels" : ["QTEST_DEFECT"],"dataUpdateSupported" : true,"uniqueKey" : ["projectId", "ID"]}},
 	"projectList": []
 	},	
 	"enableTraceMatrixReport": true,

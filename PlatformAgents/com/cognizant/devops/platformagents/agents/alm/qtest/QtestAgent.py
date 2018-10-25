@@ -110,34 +110,75 @@ class QtestAgent(BaseAgent):
                     self.tracking[str(projectId)] = trackingDetails
                     self.updateTrackingJson(self.tracking)
                 enableTraceMatrixReport = self.config.get("enableTraceMatrixReport", False)
-                dataTraceMatrix = []
                 if enableTraceMatrixReport:
-                    #metaDataTraceMatrix = {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : True,"uniqueKey" : ["projectId", "ID"]}
-                    metaDataTraceMatrix = self.config.get("dynamicTemplate", {}).get("traceMatrixReportMetadata", None)
-                    page_size = 25
-                    page_num = 1
-                    link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
-                    traceMatrixReport = self.getResponse(link, 'GET', None, None, None, None, headers)
-                    nextPageResponse = True
-                    while nextPageResponse:
-                        if len(traceMatrixReport) > 0:
-                            traceMatrixReport = traceMatrixReport[0].get("requirements", None)
-                            for matrix in traceMatrixReport:
-                                injectData= {}
-                                if 'testcases' in matrix:
-                                    injectData['projectName'] = projectName
-                                    injectData['projectId'] = projectId
-                                    injectData['testcases'] = matrix.get('testcases', None)
-                                    injectData['linkedTestcaseCount'] = matrix.get('linked-testcases', None)
-                                    injectData['ID'] = matrix.get('id', None)
-                                    dataTraceMatrix.append(injectData)
-                        else:
-                            nextPageResponse = False
-                        page_num = page_num + 1
-                        link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
-                        traceMatrixReport = self.getResponse(link, 'GET', None, None, None, None, headers)
-                    if len(dataTraceMatrix) > 0:
-                        self.publishToolsData(dataTraceMatrix, metaDataTraceMatrix)
+                    self.getTraceMatrixReport(baseUrl, projectId, projectName, headers)
+                defectMetaData = self.config.get("dynamicTemplate", {}).get("defectMetaData", None)
+                if defectMetaData:
+                    self.getDefectsReport(baseUrl, startFrom, projectId, projectName, headers, defectMetaData)
+    def getDefectsReport(self, baseUrl, startFrom, projectId, projectName, headers, defectMetaData):
+        data = []
+        projectLastUpdateDate = self.tracking.get(str(projectId), {}).get("lastUpdatedDefects", None)
+        if projectLastUpdateDate is not None:
+            startFrom = parser.parse(projectLastUpdateDate, ignoretz=True)
+        else:
+            startFrom = startFrom
+        link = baseUrl + "/api/v3/projects/" + str(projectId) + "/defects"
+        defectsResponse = self.getResponse(link, 'GET', None, None, None, None, headers)
+        if len(defectsResponse.get("defects", [])) > 0:
+            for defect in defectsResponse.get("defects"):
+                lastUpdated = defect.get('last_modified_date', None)
+                if projectLastUpdateDate < lastUpdated:
+                    projectLastUpdateDate = lastUpdated
+                lastUpdated = parser.parse(lastUpdated, ignoretz=True)
+                if lastUpdated > startFrom:
+                    responseTemplate = self.config.get("dynamicTemplate", {}).get("defectMetaData", {}).get("responseTemplate", None)
+                    if responseTemplate:
+                        injectData= {}
+                        injectData['projectName'] = projectName
+                        injectData['projectId'] = projectId
+                        injectData['type'] = "defect"
+                        data += self.parseResponse(responseTemplate, defect, injectData)
+            metadata = defectMetaData.get("metadata", None)
+            if len(data) > 0:
+                self.publishToolsData(data, metadata)
+            trackingDetails = self.tracking.get(str(projectId),None)
+            trackingDetails["lastUpdatedDefects"] = projectLastUpdateDate
+            self.tracking[str(projectId)] = trackingDetails
+            self.updateTrackingJson(self.tracking)                  
+            
+    def getTraceMatrixReport(self, baseUrl, projectId, projectName, headers):
+        dataTraceMatrix = []
+        #metaDataTraceMatrix = {"labels" : ["QTEST_REQUIREMENT"],"dataUpdateSupported" : True,"uniqueKey" : ["projectId", "ID"]}
+        metaDataTraceMatrix = self.config.get("dynamicTemplate", {}).get("traceMatrixReportMetadata", None)
+        page_size = 25
+        page_num = 1
+        link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
+        traceMatrixReport = self.getResponse(link, 'GET', None, None, None, None, headers)
+        nextPageResponse = True
+        while nextPageResponse:
+            if len(traceMatrixReport) > 0:
+                try:
+                    traceMatrixReport = traceMatrixReport[0].get("requirements", None)
+                    for matrix in traceMatrixReport:
+                        injectData= {}
+                        if 'testcases' in matrix:
+                            injectData['projectName'] = projectName
+                            injectData['projectId'] = projectId
+                            injectData['testcases'] = matrix.get('testcases', None).split(',')
+                            injectData['linkedTestcaseCount'] = matrix.get('linked-testcases', None)
+                            injectData['PID'] = matrix.get('id', None)
+                            dataTraceMatrix.append(injectData)
+                except Exception as ex:
+                    nextPageResponse = False
+                    logging.error(ex)
+                    break
+            else:
+                nextPageResponse = False
+            page_num = page_num + 1
+            link = baseUrl + "/api/v3/projects/" + str(projectId) + "/requirements/trace-matrix-report" + "?page=" + str(page_num) + "&size=" + str(page_size)
+            traceMatrixReport = self.getResponse(link, 'GET', None, None, None, None, headers)
+        if len(dataTraceMatrix) > 0:
+            self.publishToolsData(dataTraceMatrix, metaDataTraceMatrix)
     '''
                             self.numbers_to_months(link_type, link)
     def numbers_to_months(self, link_type, link):
