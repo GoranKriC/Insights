@@ -72,10 +72,10 @@ class QtestAgent(BaseAgent):
                                 link = baseUrl + "/api/v3/projects/" + str(projectId) + "/" + str(link_type) + "?page=" + str(page_num) + "&size=" + str(page_size) + "&expandProps=false&expandSteps=false"
                             nextPageResponse = True
                             linkResponse = self.getResponse(link, 'GET', None, None, None, None, headers)
+                            link_type_available = False
                             while nextPageResponse:
                                 if len(linkResponse) > 0:
-                                    linkTypeUpdateTracking = {link_type: True}
-                                    linkUpdateTracking.append(linkTypeUpdateTracking)
+                                    link_type_available = True
                                     try:
                                         for res in linkResponse:
                                             lastUpdated = res.get('last_modified_date', None)
@@ -103,6 +103,9 @@ class QtestAgent(BaseAgent):
                                     linkResponse = self.getResponse(link, 'GET', None, None, None, None, headers)
                                 else:
                                     nextPageResponse = False
+                            if link_type_available:
+                                linkTypeUpdateTracking = {link_type: link_type_available}
+                                linkUpdateTracking.append(linkTypeUpdateTracking)
                         metadata = links.get("metadata", None)
                         if len(data) > 0:
                             self.publishToolsData(data, metadata)
