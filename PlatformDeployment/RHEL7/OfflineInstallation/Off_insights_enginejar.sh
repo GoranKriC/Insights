@@ -27,4 +27,4 @@ source /etc/environment
 source /etc/profile
 sudo cp /usr/Offline_Installation/Insight_Components/PlatformEngine.jar ./
 sleep 2
-sudo nohup java -jar PlatformEngine.jar >> $INSIGHTS_LOGS/PlatformEnginenohup.out &
+sudo nohup java -jar PlatformEngine.jar >> $INSIGHTS_HOME/logs/PlatformEngine/PlatformEnginenohup.out &
