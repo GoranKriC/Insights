@@ -26,13 +26,6 @@ export INSIGHTS_HOME=`pwd`
 sudo echo INSIGHTS_HOME=`pwd` | sudo tee -a /etc/environment
 sudo echo "export" INSIGHTS_HOME=`pwd` | sudo tee -a /etc/profile
 sudo chmod -R 777 /usr/INSIGHTS_HOME/
-cd /opt/
-sudo mkdir insightslogs
-cd insightslogs
-export INSIGHTS_LOGS=`pwd`
-sudo echo INSIGHTS_LOGS=`pwd` | sudo tee -a /etc/environment
-sudo echo "export" INSIGHTS_LOGS=`pwd` | sudo tee -a /etc/profile
-sudo chmod -R 777 /usr/INSIGHTS_LOGS/
 source /etc/environment
 source /etc/profile
 myextip=$(wget -qO- icanhazip.com)
